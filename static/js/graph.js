@@ -3,17 +3,17 @@
  */
 queue()
    .defer(d3.json, "/donorsUS/projects")
-   .await(makeGraphs);
+    .defer(d3.json, "/static/us-states.json")
+    .await(makeGraphs);
 
-function makeGraphs(error, projectsJson) {
+function makeGraphs(error, projectsJson, statesJson) {
+    var donorsUSProjects = projectsJson;
+    var dateFormat = d3.time.format("%Y-%m-%d %H:%M:%S");
 
-   //Clean projectsJson data
-   var donorsUSProjects = projectsJson;
-   var dateFormat = d3.time.format("%Y-%m-%d %H:%M:%S");
-   donorsUSProjects.forEach(function (d) {
-       d["date_posted"] = dateFormat.parse(d["date_posted"]);
-       d["date_posted"].setDate(1);
-       d["total_donations"] = +d["total_donations"];
+   donorsUSProjects.forEach(function (d){
+    d["date_posted"] = dateFormat.parse(d["date_posted"]);
+    //d["date_posted"].setDate(1);
+    d["total_donations"] = +d["total_donations"];
    });
 
 
@@ -71,6 +71,7 @@ function makeGraphs(error, projectsJson) {
    var numberProjectsND = dc.numberDisplay("#number-projects-nd");
    var totalDonationsND = dc.numberDisplay("#total-donations-nd");
    var fundingStatusChart = dc.pieChart("#funding-chart");
+   var fundingStatusmap = dc.geoChoroplethChart("#funding-map");
 
 
    selectField = dc.selectMenu('#menu-select')
@@ -95,7 +96,7 @@ function makeGraphs(error, projectsJson) {
 
  timeChart
        .width(800)
-       .height(200)
+       .height(300)
        .margins({top: 10, right: 50, bottom: 30, left: 50})
        .dimension(dateDim)
        .group(numProjectsByDate)
@@ -120,12 +121,30 @@ function makeGraphs(error, projectsJson) {
        .xAxis().ticks(4);
 
    fundingStatusChart
-       .height(220)
-       .radius(90)
+       .height(250)
+       .radius(120)
        .innerRadius(40)
        .transitionDuration(1500)
        .dimension(fundingStatus)
        .group(numProjectsByFundingStatus);
+
+   fundingStatusmap.width(1000)
+        .height(300)
+        .dimension(stateDim)
+        .group(totalDonationsByState)
+        .colors(["#ff0000", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#7C151D"])
+        .colorDomain([0, max_state])
+        .overlayGeoJson(statesJson["features"], "state", function (d) {
+            return d.properties.name;
+        })
+        .projection(d3.geo.albersUsa()
+            .scale(600)
+            .translate([340, 150]))
+        .title(function (p) {
+            return "State: " + p["key"]
+                + "\n"
+                + "Total Donations: " + Math.round(p["value"]) + " $";
+        });
 
 
    dc.renderAll();
