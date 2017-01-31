@@ -26,6 +26,9 @@ I wanted to create the core components and structure of a working dashboard by c
 
 # Design
 
+The Design was to be fairly basic , Pull in a full listing of donations (DonorsChoose.org) and limit them down to 20,000 (for loading times on the page) and display it in an easy to use simple interface that would hopefully make it easy to both use and access the information provided to the end user.
+By steping away away slightly from the classic and somewhat familiar charts and applying a map of America and also adding a guided tour of each chart ("Start Tour" located in the top left hand corner) using a <div class = "chart-wrapper"> I also hoped it would add to the look , feel and overal usabilty of the users experince and my end product.  
+
 
 
 
